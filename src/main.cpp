@@ -5,9 +5,7 @@ using namespace cv;
 using namespace std;
 
 
-//TODO:	find golden values + use blur + face masking
-
-
+//TODO:	face masking
 
 int main()
 {
@@ -21,11 +19,14 @@ int main()
 	vector<vector<Point>> contours;
 	vector<Vec4i> hierarchy;
 
+	int minH = 0,
+		minS = 0, 
+		minV = 100,	//the lowest value the more noise (about 100 is ok)
+		maxH = 255,	// > 180 
+		maxS = 125, 
+		maxV = 255;
+
 	//Trackbar for adjustation HSV
-
-	//values works with face in camera
-	int minH = 0, minS = 0, minV = 113, maxH = 255, maxS = 160, maxV = 255;
-
 	namedWindow("trackbar");
 	createTrackbar("MinH", "trackbar", &minH, 180);
 	createTrackbar("MinS", "trackbar", &minS, 255);
@@ -40,7 +41,7 @@ int main()
 
 		cvtColor(webcam, grey_hsv, CV_BGR2HSV);
 		inRange(grey_hsv, Scalar(minH, minS, minV), Scalar(maxH, maxS, maxV), grey_hsv);
-
+		medianBlur(grey_hsv, grey_hsv, 5);
 		//Detecting contours
 		findContours(grey_hsv, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
