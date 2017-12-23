@@ -4,6 +4,8 @@
 using namespace cv;
 using namespace std;
 
+//TODO: get rid of face
+
 int main()
 {
 	VideoCapture cam(0);
@@ -20,12 +22,14 @@ int main()
 	vector<Vec4i> hierarchy;
 	vector<vector<Point>> hull(1);
 	vector< Rect_<int> > facesDetected;
+	vector<int> hullIndexes;
+	vector<Vec4i> convexityDefects;
 
 	//add profile-face haarcascade
 	//CascadeClassifier frontalFace = CascadeClassifier("haarcascades/frontal-face-extended.xml");
 
 	//make dependencies on lightning
-	//this values works for medium light in the room
+	//this values works for well lighted first plan (hand)
 	int minH = 0,
 		minS = 0, 
 		minV = 100,	//the lowest value the more noise (about 100 is ok)
@@ -45,8 +49,6 @@ int main()
 	while (1) 
 	{
 		cam.read(webcam);
-
-		//colors and blur changes
 
 		//for face detection
 		cvtColor(webcam, grey, COLOR_RGB2GRAY);
@@ -77,6 +79,8 @@ int main()
 
 		size_t lrgContour = 0;
 
+		cout << contours.size()<<endl;
+
 		for (size_t i = 1; i < contours.size(); i++)
 		{
 			if (contourArea(contours[i]) > contourArea(contours[lrgContour]))
@@ -89,6 +93,22 @@ int main()
 		{
 			convexHull(Mat(contours[lrgContour]), hull[0], false);
 			drawContours(webcam, hull, 0, Scalar(255, 0, 0), 2);
+
+			if (hull[0].size() > 2)
+			{
+				convexHull(Mat(contours[lrgContour]), hullIndexes, true);
+				cv::convexityDefects(Mat(contours[lrgContour]), hullIndexes, convexityDefects);
+				
+				for (size_t i = 0; i < convexityDefects.size(); i++)
+				{
+					Point p1 = contours[lrgContour][convexityDefects[i][0]];
+					Point p2 = contours[lrgContour][convexityDefects[i][1]];
+					Point p3 = contours[lrgContour][convexityDefects[i][2]];
+
+					line(webcam, p1, p3, Scalar(0, 255, 0), 1);
+					line(webcam, p3, p2, Scalar(0, 255, 0), 1);
+				}
+			}
 		}
 
 		imshow("trackbar", grey_hsv);
