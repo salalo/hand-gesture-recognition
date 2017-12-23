@@ -75,7 +75,6 @@ int main()
 
 		//detecting contours
 		findContours(grey_hsv, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-
 		size_t lrgContour = 0;
 
 		//Objects detetced in pov
@@ -86,6 +85,7 @@ int main()
 			if (contourArea(contours[i]) > contourArea(contours[lrgContour]))
 				lrgContour = i;
 		}
+
 		//contours as edges in red
 		drawContours(webcam, contours, lrgContour, Scalar(0, 0, 255), 1);
 
