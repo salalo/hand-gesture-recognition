@@ -4,7 +4,18 @@
 using namespace cv;
 using namespace std;
 
-//TODO: get rid of face + make a adjustment process
+/*
+	Made without background subtraction
+	is too dependent on lightning level.
+
+	In fact to make it work right, every
+	time starting the program, HSV values'
+	range would have to be adjusted depending
+	on the current lightning.
+
+	Face recognition using haar cascades
+	is slow and imprecise as well.
+*/
 
 int main()
 {
@@ -27,7 +38,6 @@ int main()
 
 	//CascadeClassifier frontalFace = CascadeClassifier("haarcascades/frontal-face-extended.xml");
 
-	//make dependencies on lightning
 	//this values works for well lighted first plan (hand) only
 	int minH = 0,
 		minS = 0, 
@@ -49,16 +59,12 @@ int main()
 	{
 		cam.read(webcam);
 
-		//for face detection
-		cvtColor(webcam, grey, COLOR_RGB2GRAY);
-		//for hand detection
+		//cvtColor(webcam, grey, COLOR_RGB2GRAY);
 		cvtColor(webcam, grey_hsv, CV_BGR2HSV);
 		inRange(grey_hsv, Scalar(minH, minS, minV), Scalar(maxH, maxS, maxV), grey_hsv);
 		medianBlur(grey_hsv, grey_hsv, 5);
 
 		/*
-
-		//detecting face with haar cascades is not so efficient
 		frontalFace.detectMultiScale(grey, facesDetected);
 
 		for (int i = 0; i < facesDetected.size(); i++)
@@ -70,7 +76,6 @@ int main()
 			//grabCut evokes crash
 			//grabCut(grey, grey_hsv, face_i, bgdModel, fgdModel, 1);
 		}
-
 		*/
 
 		//detecting contours
@@ -78,7 +83,7 @@ int main()
 		size_t lrgContour = 0;
 
 		//Objects detetced in pov
-		cout <<contours.size()<<endl;
+		//cout <<contours.size()<<endl;
 
 		for (size_t i = 1; i < contours.size(); i++)
 		{
