@@ -4,7 +4,7 @@
 using namespace cv;
 using namespace std;
 
-//TODO: get rid of face
+//TODO: get rid of face + make a adjustment process
 
 int main()
 {
@@ -25,11 +25,10 @@ int main()
 	vector<int> hullIndexes;
 	vector<Vec4i> convexityDefects;
 
-	//add profile-face haarcascade
 	//CascadeClassifier frontalFace = CascadeClassifier("haarcascades/frontal-face-extended.xml");
 
 	//make dependencies on lightning
-	//this values works for well lighted first plan (hand)
+	//this values works for well lighted first plan (hand) only
 	int minH = 0,
 		minS = 0, 
 		minV = 100,	//the lowest value the more noise (about 100 is ok)
@@ -79,13 +78,15 @@ int main()
 
 		size_t lrgContour = 0;
 
-		cout << contours.size()<<endl;
+		//Objects detetced in pov
+		cout <<contours.size()<<endl;
 
 		for (size_t i = 1; i < contours.size(); i++)
 		{
 			if (contourArea(contours[i]) > contourArea(contours[lrgContour]))
 				lrgContour = i;
 		}
+		//contours as edges in red
 		drawContours(webcam, contours, lrgContour, Scalar(0, 0, 255), 1);
 
 		//convex hull
@@ -98,7 +99,16 @@ int main()
 			{
 				convexHull(Mat(contours[lrgContour]), hullIndexes, true);
 				cv::convexityDefects(Mat(contours[lrgContour]), hullIndexes, convexityDefects);
-				
+
+				Rect boundingBox = boundingRect(hull[0]);
+				rectangle(webcam, boundingBox, Scalar(0, 0, 255), 1);
+
+				//calculating center of mass for the object
+				Point centerOfMass = Point(boundingBox.x + boundingBox.width / 2, boundingBox.y + boundingBox.height / 2);
+				//centerOfMass point in black
+				circle(webcam, centerOfMass, 4, Scalar(0, 0, 0), CV_FILLED);
+
+				//lines conecting convex and defect points
 				for (size_t i = 0; i < convexityDefects.size(); i++)
 				{
 					Point p1 = contours[lrgContour][convexityDefects[i][0]];
